@@ -3,6 +3,7 @@ package com.vizdizbot.service;
 import com.vizdizbot.entyty.Filters;
 import com.vizdizbot.message.CheckMessage;
 import com.vizdizbot.message.MessageStatus;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -20,6 +21,8 @@ import java.util.Optional;
 
 @Component
 public class VizDizBot extends TelegramLongPollingBot {
+
+    private static final Logger logger = Logger.getLogger(VizDizBot.class);
     private final BotService botService;
     private final FiltersService filtersService;
     private MessageStatus messageStatus = MessageStatus.DEFAULT;
@@ -38,11 +41,11 @@ public class VizDizBot extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/delete","Удалить текст для поиска"));
         botCommands.add(new BotCommand("/show","Отобразить все критерии поиска"));
         botCommands.add(new BotCommand("/help","Отобразить информацию о командах"));
-
         try {
             this.execute(new SetMyCommands(botCommands,new BotCommandScopeDefault(),null));
+            logger.info("Bot created success");
         }catch (TelegramApiException e) {
-            System.out.println(e.getMessage());
+            logger.error("Execute bot failed",e);
         }
     }
 
@@ -132,7 +135,7 @@ public class VizDizBot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);
+            logger.error("Execute send message failed",e);
         }
 
     }
