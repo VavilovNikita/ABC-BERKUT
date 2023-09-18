@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Service
 public class FiltersService {
-    FiltersRepository filtersRepository;
+    private final FiltersRepository filtersRepository;
 
     @Autowired
     public FiltersService(FiltersRepository filtersRepository) {

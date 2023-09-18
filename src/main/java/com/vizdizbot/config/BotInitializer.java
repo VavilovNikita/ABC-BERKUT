@@ -13,8 +13,12 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 @Component
 public class BotInitializer {
     private static final Logger logger = Logger.getLogger(BotInitializer.class);
+
+    private final VizDizBot bot;
     @Autowired
-    VizDizBot bot;
+    public BotInitializer(VizDizBot bot) {
+        this.bot = bot;
+    }
 
     @EventListener({ContextRefreshedEvent.class})
     public void init() throws TelegramApiException {

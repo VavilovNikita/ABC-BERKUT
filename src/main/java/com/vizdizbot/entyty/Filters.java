@@ -5,22 +5,22 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "Filters")
+@Table(name = "filters")
 public class Filters {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(name = "text", columnDefinition = "text")
+    private String text;
+
     public Filters(String text) {
         this.text = text;
     }
 
     public Filters() {
     }
-
-    @Id
-    @GeneratedValue
-    @Column(name = "id")
-    private int id;
-
-    @Column(name = "text", columnDefinition="text")
-    private String text;
 
     @Override
     public String toString() {

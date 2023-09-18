@@ -10,7 +10,7 @@ import java.util.List;
 
 @Service
 public class BotService {
-    BotRepository botRepository;
+    private final BotRepository botRepository;
 
     @Autowired
     public BotService(BotRepository botRepository) {

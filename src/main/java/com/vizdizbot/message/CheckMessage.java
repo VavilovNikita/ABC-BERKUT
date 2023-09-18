@@ -7,12 +7,13 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
 import java.util.List;
+
 @Component
 public class CheckMessage {
+
+    private final BotService botService;
+
     @Autowired
-    private BotService botService;
-
-
     public CheckMessage(BotService botService) {
         this.botService = botService;
     }
@@ -27,6 +28,6 @@ public class CheckMessage {
     }
 
     public boolean isHomeChatAndNotBot(Message message) {
-    return !message.getFrom().getIsBot() && message.getChat().getId().equals(botService.get().getHomeChatId());
+        return !message.getFrom().getIsBot() && message.getChat().getId().equals(botService.get().getHomeChatId());
     }
 }
