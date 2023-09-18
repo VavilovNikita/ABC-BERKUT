@@ -43,7 +43,6 @@ public class VizDizBot extends TelegramLongPollingBot {
         botCommands.add(new BotCommand("/help","Отобразить информацию о командах"));
         try {
             this.execute(new SetMyCommands(botCommands,new BotCommandScopeDefault(),null));
-            logger.info("Bot created success");
         }catch (TelegramApiException e) {
             logger.error("Execute bot failed",e);
         }

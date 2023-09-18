@@ -1,6 +1,7 @@
 package com.vizdizbot.config;
 
 import com.vizdizbot.service.VizDizBot;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
@@ -11,6 +12,7 @@ import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 @Component
 public class BotInitializer {
+    private static final Logger logger = Logger.getLogger(BotInitializer.class);
     @Autowired
     VizDizBot bot;
 
@@ -18,6 +20,7 @@ public class BotInitializer {
     public void init() throws TelegramApiException {
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         telegramBotsApi.registerBot(bot);
+        logger.info("Bot created success");
     }
 
 }
