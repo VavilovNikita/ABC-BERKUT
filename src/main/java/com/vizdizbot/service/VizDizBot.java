@@ -1,5 +1,6 @@
 package com.vizdizbot.service;
 
+import com.vizdizbot.entyty.Command;
 import com.vizdizbot.entyty.Filters;
 import com.vizdizbot.message.CheckMessage;
 import com.vizdizbot.message.MessageStatus;
@@ -37,14 +38,14 @@ public class VizDizBot extends TelegramLongPollingBot {
         this.filtersService = filtersService;
         this.checkMessage = checkMessage;
         List<BotCommand> botCommands = new ArrayList<>();
-        botCommands.add(new BotCommand("/add","Добавить текст для поиска"));
-        botCommands.add(new BotCommand("/delete","Удалить текст для поиска"));
-        botCommands.add(new BotCommand("/show","Отобразить все критерии поиска"));
-        botCommands.add(new BotCommand("/help","Отобразить информацию о командах"));
+        botCommands.add(new BotCommand("/add", "Добавить текст для поиска"));
+        botCommands.add(new BotCommand("/delete", "Удалить текст для поиска"));
+        botCommands.add(new BotCommand("/show", "Отобразить все критерии поиска"));
+        botCommands.add(new BotCommand("/help", "Отобразить информацию о командах"));
         try {
-            this.execute(new SetMyCommands(botCommands,new BotCommandScopeDefault(),null));
-        }catch (TelegramApiException e) {
-            logger.error("Execute bot failed",e);
+            this.execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
+        } catch (TelegramApiException e) {
+            logger.error("Execute bot failed", e);
         }
     }
 
@@ -79,25 +80,9 @@ public class VizDizBot extends TelegramLongPollingBot {
 
             } else {
                 if (checkMessage.isHomeChatAndNotBot(message)) {
-                    String[] msg = message.getText().split("@");
-                    if(msg[1].equals(botService.get().getName())){
-                        switch (msg[0].toLowerCase()) {
-                            case "/add" -> {
-                                sendMessage(botService.get().getHomeChatId(), "Введите текст для добавления");
-                                messageStatus = MessageStatus.WAIT_ADD;
-                            }
-                            case "/delete" -> {
-                                sendMessage(botService.get().getHomeChatId(), "Введите текст для Удаления");
-                                messageStatus = MessageStatus.WAIT_DELETE;
-                            }
-                            case "/show" -> {
-                                List<Filters> show = filtersService.findAll();
-                                        sendMessage(botService.get().getHomeChatId(), show.isEmpty()?"Список пуст":show.toString());
-                            }
-                            case "/help" ->
-                                    sendMessage(botService.get().getHomeChatId(), helpMessage);
-                            default -> sendMessage(botService.get().getHomeChatId(), "Неизвестная команда попробуйте /help");
-                        }
+                    Command command = new Command(botService.get().getName(), message.getText());
+                    if (command.getBotName().equals(botService.get().getName())) {
+                        executeCommand(command.getCommand());
                     }
                 } else {
                     String messageText = message.getText().toLowerCase();
@@ -127,6 +112,26 @@ public class VizDizBot extends TelegramLongPollingBot {
         return botService.get().getToken();
     }
 
+    public void executeCommand(String command) {
+        switch (command) {
+            case "/add" -> {
+                sendMessage(botService.get().getHomeChatId(), "Введите текст для добавления");
+                messageStatus = MessageStatus.WAIT_ADD;
+            }
+            case "/delete" -> {
+                sendMessage(botService.get().getHomeChatId(), "Введите текст для Удаления");
+                messageStatus = MessageStatus.WAIT_DELETE;
+            }
+            case "/show" -> {
+                List<Filters> show = filtersService.findAll();
+                sendMessage(botService.get().getHomeChatId(), show.isEmpty() ? "Список пуст" : show.toString());
+            }
+            case "/help" -> sendMessage(botService.get().getHomeChatId(), helpMessage);
+            default -> sendMessage(botService.get().getHomeChatId(), "Неизвестная команда попробуйте /help");
+        }
+    }
+
+
     private void sendMessage(Long chatId, String messageForSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -134,7 +139,7 @@ public class VizDizBot extends TelegramLongPollingBot {
         try {
             execute(message);
         } catch (TelegramApiException e) {
-            logger.error("Execute send message failed",e);
+            logger.error("Execute send message failed", e);
         }
 
     }
