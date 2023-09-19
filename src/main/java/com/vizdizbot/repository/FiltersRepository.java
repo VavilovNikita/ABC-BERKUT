@@ -1,6 +1,6 @@
 package com.vizdizbot.repository;
 
-import com.vizdizbot.entyty.Filters;
+import com.vizdizbot.entity.Filters;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

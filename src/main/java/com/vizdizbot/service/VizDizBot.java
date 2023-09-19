@@ -1,9 +1,9 @@
 package com.vizdizbot.service;
 
-import com.vizdizbot.entyty.Command;
-import com.vizdizbot.entyty.Filters;
-import com.vizdizbot.message.CheckMessage;
-import com.vizdizbot.message.MessageStatus;
+import com.vizdizbot.config.BotProperties;
+import com.vizdizbot.model.Command;
+import com.vizdizbot.entity.Filters;
+import jakarta.annotation.PostConstruct;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,33 +15,34 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import com.vizdizbot.utils.MessageUtil;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class VizDizBot extends TelegramLongPollingBot {
 
     private static final Logger logger = Logger.getLogger(VizDizBot.class);
-    private final BotService botService;
+    private final BotProperties botProperties;
     private final FiltersService filtersService;
-    private MessageStatus messageStatus = MessageStatus.DEFAULT;
+    private MessageUtil.MessageStatus messageStatus = MessageUtil.MessageStatus.DEFAULT;
 
-    private final CheckMessage checkMessage;
-
-    private final String helpMessage = "/add Добавить текст для поиска\n" + "/delete Удалить текст для поиска\n" + "/show Отобразить все критерии поиска\n" + "/help повторить это сообщение\n";
 
     @Autowired
-    public VizDizBot(BotService botService, FiltersService filtersService, CheckMessage checkMessage) {
-        this.botService = botService;
+    public VizDizBot(BotProperties botProperties, FiltersService filtersService) {
+        this.botProperties = botProperties;
         this.filtersService = filtersService;
-        this.checkMessage = checkMessage;
-        List<BotCommand> botCommands = new ArrayList<>();
-        botCommands.add(new BotCommand("/add", "Добавить текст для поиска"));
-        botCommands.add(new BotCommand("/delete", "Удалить текст для поиска"));
-        botCommands.add(new BotCommand("/show", "Отобразить все критерии поиска"));
-        botCommands.add(new BotCommand("/help", "Отобразить информацию о командах"));
+    }
+
+
+    @PostConstruct
+    public void createMenu() {
+        final List<BotCommand> botCommands = Arrays.stream(MessageUtil.Menu.values())
+                .map(menu -> new BotCommand(menu.menuItem, menu.menuDescription))
+                .collect(Collectors.toList());
         try {
             this.execute(new SetMyCommands(botCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -49,92 +50,89 @@ public class VizDizBot extends TelegramLongPollingBot {
         }
     }
 
-
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText()) {
-            Message message = update.getMessage();
-            if (!messageStatus.equals(MessageStatus.DEFAULT) && checkMessage.isHomeChatAndNotBot(message)) {
-                switch (messageStatus) {
-                    case WAIT_ADD -> {
-                        if (filtersService.getByText(message.getText()).isEmpty()) {
-                            filtersService.save(new Filters(message.getText().toLowerCase()));
-                            sendMessage(botService.get().getHomeChatId(), "Текст \"" + message.getText() + "\" успешно добавлен");
-                        } else {
-                            sendMessage(botService.get().getHomeChatId(), "Текст \"" + message.getText() + "\" уже существует");
-                        }
-                        messageStatus = MessageStatus.DEFAULT;
-
-                    }
-                    case WAIT_DELETE -> {
-                        Optional<Filters> filters = filtersService.getByText(message.getText().toLowerCase());
-                        if (filters.isPresent()) {
-                            filtersService.delete(filters.get());
-                            sendMessage(botService.get().getHomeChatId(), "Текст \"" + message.getText() + "\" успешно удален");
-                        } else {
-                            sendMessage(botService.get().getHomeChatId(), "Текст \"" + message.getText() + "\" не найден");
-                        }
-                        messageStatus = MessageStatus.DEFAULT;
-                    }
-                }
-
-            } else {
-                if (checkMessage.isHomeChatAndNotBot(message)) {
-                    Command command = new Command(botService.get().getName(), message.getText());
-                    if (command.getBotName().equals(botService.get().getName())) {
-                        executeCommand(command.getCommand());
-                    }
-                } else {
-                    String messageText = message.getText().toLowerCase();
-                    if (CheckMessage.wordsContains(filtersService.findAll(), messageText.toLowerCase())) {
-                        sendMessage(botService.get().getHomeChatId(), "@" +
-                                message.getFrom().getUserName() +
-                                " Отправил сообщение в группу " +
-                                message.getChat().getTitle() +
-                                " с сообщением \"" + message.getText() +
-                                "\"");
-                    }
-                }
-            }
-
-
+            receiveMessage(update.getMessage());
         }
     }
 
 
     @Override
     public String getBotUsername() {
-        return botService.get().getName();
+        return botProperties.getUserName();
     }
 
     @Override
     public String getBotToken() {
-        return botService.get().getToken();
+        return botProperties.getToken();
     }
 
-    public void executeCommand(String command) {
-        switch (command) {
-            case "/add" -> {
-                sendMessage(botService.get().getHomeChatId(), "Введите текст для добавления");
-                messageStatus = MessageStatus.WAIT_ADD;
+    private void receiveMessage(Message message) {
+        if (!messageStatus.equals(MessageUtil.MessageStatus.DEFAULT) && isHomeChatAndNotBot(message)) {
+            switch (messageStatus) {
+                case WAIT_ADD -> {
+                    if (filtersService.getByText(message.getText()).isEmpty()) {
+                        filtersService.save(new Filters(message.getText().toLowerCase()));
+                        sendMessage(String.format(MessageUtil.ADD_SUCCESS, message.getText()));
+                    } else {
+                        sendMessage(String.format(MessageUtil.ADD_FAILED, message.getText()));
+                    }
+                    messageStatus = MessageUtil.MessageStatus.DEFAULT;
+
+                }
+                case WAIT_DELETE -> {
+                    Optional<Filters> filters = filtersService.getByText(message.getText().toLowerCase());
+                    if (filters.isPresent()) {
+                        filtersService.delete(filters.get());
+                        sendMessage(String.format(MessageUtil.DELETE_SUCCESS, message.getText()));
+                    } else {
+                        sendMessage(String.format(MessageUtil.DELETE_FAILED, message.getText()));
+                    }
+                    messageStatus = MessageUtil.MessageStatus.DEFAULT;
+                }
             }
-            case "/delete" -> {
-                sendMessage(botService.get().getHomeChatId(), "Введите текст для Удаления");
-                messageStatus = MessageStatus.WAIT_DELETE;
+
+        } else {
+            if (isHomeChatAndNotBot(message)) {
+                Command command = new Command(botProperties.getUserName(), message.getText());
+                if (command.getBotName().equals(botProperties.getUserName())) {
+                    executeCommand(command.getCommand());
+                }
+            } else {
+                String messageText = message.getText().toLowerCase();
+                if (MessageUtil.wordsContains(filtersService.findAll(), messageText.toLowerCase())) {
+                    sendMessage(String.format(MessageUtil.COINCIDENCE, message.getFrom().getUserName(), message.getChat().getTitle(), message.getText()));
+                }
             }
-            case "/show" -> {
-                List<Filters> show = filtersService.findAll();
-                sendMessage(botService.get().getHomeChatId(), show.isEmpty() ? "Список пуст" : show.toString());
-            }
-            case "/help" -> sendMessage(botService.get().getHomeChatId(), helpMessage);
-            default -> sendMessage(botService.get().getHomeChatId(), "Неизвестная команда попробуйте /help");
         }
     }
 
 
-    private void sendMessage(Long chatId, String messageForSend) {
+    public void executeCommand(String command) {
+
+        switch (command) {
+            case MessageUtil.ADD -> {
+                sendMessage(MessageUtil.Menu.ADD.getMenuMessage());
+                messageStatus = MessageUtil.MessageStatus.WAIT_ADD;
+            }
+            case MessageUtil.DELETE -> {
+                sendMessage(MessageUtil.Menu.DELETE.getMenuMessage());
+                messageStatus = MessageUtil.MessageStatus.WAIT_DELETE;
+            }
+            case MessageUtil.SHOW -> {
+                List<Filters> show = filtersService.findAll();
+                sendMessage(show.isEmpty() ? MessageUtil.Menu.SHOW.getMenuMessage() : show.toString());
+            }
+            case MessageUtil.HELP -> sendMessage(MessageUtil.Menu.HELP.getMenuMessage());
+            default -> sendMessage(MessageUtil.UNKNOWN_COMMAND);
+        }
+    }
+
+
+    private void sendMessage(String messageForSend) {
         SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
+        message.setChatId(String.valueOf(botProperties.getHomeChatId()));
         message.setText(messageForSend);
         try {
             execute(message);
@@ -142,5 +140,9 @@ public class VizDizBot extends TelegramLongPollingBot {
             logger.error("Execute send message failed", e);
         }
 
+    }
+
+    private boolean isHomeChatAndNotBot(Message message) {
+        return !message.getFrom().getIsBot() && message.getChat().getId().equals(botProperties.getHomeChatId());
     }
 }
