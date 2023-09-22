@@ -1,4 +1,4 @@
-package com.vizdizbot.entyty;
+package com.vizdizbot.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;

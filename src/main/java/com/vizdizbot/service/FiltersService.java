@@ -1,6 +1,6 @@
 package com.vizdizbot.service;
 
-import com.vizdizbot.entyty.Filters;
+import com.vizdizbot.entity.Filters;
 import com.vizdizbot.repository.FiltersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
