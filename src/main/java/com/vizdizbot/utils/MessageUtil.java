@@ -19,15 +19,10 @@ public class MessageUtil {
     public static final String DELETE_SUCCESS = "Текст \"%s\" успешно удален";
     public static final String DELETE_FAILED = "Текст \"%s\" не найден";
 
-    public enum MessageStatus {
-        WAIT_DELETE,
-        WAIT_ADD,
-        DEFAULT
-    }
 
     public enum Menu {
         ADD(MessageUtil.ADD, "Добавить текст для поиска", "Введите текст для добавления"),
-        DELETE(MessageUtil.DELETE, "Удалить текст для поиска", "Введите текст для Удаления"),
+        DELETE(MessageUtil.DELETE, "Удалить текст для поиска", "Введите текст для удаления"),
         SHOW(MessageUtil.SHOW, "Отобразить все критерии поиска", "Список пуст"),
         HELP(MessageUtil.HELP, "Отобразить информацию о командах", ADD + " Добавить текст для поиска\n" + DELETE + " Удалить текст для поиска\n" + SHOW + " Отобразить все критерии поиска\n" + MessageUtil.HELP + " повторить это сообщение\n");
 
