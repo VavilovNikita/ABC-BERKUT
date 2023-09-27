@@ -1,6 +1,7 @@
 package com.vizdizbot.service;
 
 import com.vizdizbot.config.BotProperties;
+import com.vizdizbot.entity.MessageStatus;
 import com.vizdizbot.model.Command;
 import com.vizdizbot.entity.Filters;
 import jakarta.annotation.PostConstruct;
@@ -28,7 +29,7 @@ public class VizDizBot extends TelegramLongPollingBot {
     private static final Logger logger = Logger.getLogger(VizDizBot.class);
     private final BotProperties botProperties;
     private final FiltersService filtersService;
-    private MessageUtil.MessageStatus messageStatus = MessageUtil.MessageStatus.DEFAULT;
+    private MessageStatus messageStatus = MessageStatus.DEFAULT;
 
 
     @Autowired
@@ -69,7 +70,7 @@ public class VizDizBot extends TelegramLongPollingBot {
     }
 
     private void receiveMessage(Message message) {
-        if (!messageStatus.equals(MessageUtil.MessageStatus.DEFAULT) && isHomeChatAndNotBot(message)) {
+        if (!messageStatus.equals(MessageStatus.DEFAULT) && isHomeChatAndNotBot(message)) {
             switch (messageStatus) {
                 case WAIT_ADD -> {
                     if (filtersService.getByText(message.getText()).isEmpty()) {
@@ -78,7 +79,7 @@ public class VizDizBot extends TelegramLongPollingBot {
                     } else {
                         sendMessage(String.format(MessageUtil.ADD_FAILED, message.getText()));
                     }
-                    messageStatus = MessageUtil.MessageStatus.DEFAULT;
+                    messageStatus = MessageStatus.DEFAULT;
 
                 }
                 case WAIT_DELETE -> {
@@ -89,7 +90,7 @@ public class VizDizBot extends TelegramLongPollingBot {
                     } else {
                         sendMessage(String.format(MessageUtil.DELETE_FAILED, message.getText()));
                     }
-                    messageStatus = MessageUtil.MessageStatus.DEFAULT;
+                    messageStatus = MessageStatus.DEFAULT;
                 }
             }
 
@@ -114,11 +115,11 @@ public class VizDizBot extends TelegramLongPollingBot {
         switch (command) {
             case MessageUtil.ADD -> {
                 sendMessage(MessageUtil.Menu.ADD.getMenuMessage());
-                messageStatus = MessageUtil.MessageStatus.WAIT_ADD;
+                messageStatus = MessageStatus.WAIT_ADD;
             }
             case MessageUtil.DELETE -> {
                 sendMessage(MessageUtil.Menu.DELETE.getMenuMessage());
-                messageStatus = MessageUtil.MessageStatus.WAIT_DELETE;
+                messageStatus = MessageStatus.WAIT_DELETE;
             }
             case MessageUtil.SHOW -> {
                 List<Filters> show = filtersService.findAll();
