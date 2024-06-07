@@ -10,6 +10,7 @@ public class MessageUtil {
     public static final String ADD = "/add";
     public static final String DELETE = "/delete";
     public static final String SHOW = "/show";
+    public static final String SHOWQUESTIONS = "/showQuestions";
     public static final String HELP = "/help";
     public static final String UNKNOWN_COMMAND = "Неизвестная команда попробуйте /help";
 
@@ -24,6 +25,7 @@ public class MessageUtil {
         ADD(MessageUtil.ADD, "Добавить текст для поиска", "Введите текст для добавления"),
         DELETE(MessageUtil.DELETE, "Удалить текст для поиска", "Введите текст для удаления"),
         SHOW(MessageUtil.SHOW, "Отобразить все критерии поиска", "Список пуст"),
+        SHOWQUESTIONS(MessageUtil.SHOWQUESTIONS, "Отобразить все вопросы", "Список пуст"),
         HELP(MessageUtil.HELP, "Отобразить информацию о командах", ADD + " Добавить текст для поиска\n" + DELETE + " Удалить текст для поиска\n" + SHOW + " Отобразить все критерии поиска\n" + MessageUtil.HELP + " повторить это сообщение\n");
 
         public final String menuItem;
