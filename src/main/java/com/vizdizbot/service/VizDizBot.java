@@ -149,7 +149,7 @@ public class VizDizBot extends TelegramLongPollingBot {
                 List<Filters> show = filtersService.findAll();
                 sendMessage(show.isEmpty() ? MessageUtil.Menu.SHOW.getMenuMessage() : show.toString());
             }
-            case MessageUtil.SHOWQUESTIONS -> {
+            case MessageUtil.SHOWTODAYQUESTIONS -> {
                 List<Questions> show = questionsService.findAllByToday();
                 ByteArrayInputStream excelFile = questionsToExcel(show);
                 InputStream inputStream = excelFile;
