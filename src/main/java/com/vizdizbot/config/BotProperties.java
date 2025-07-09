@@ -5,7 +5,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "bot")
 public class BotProperties {
-    Long homeChatId;
 
     String userName;
 
