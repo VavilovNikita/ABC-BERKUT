@@ -1,5 +1,6 @@
 package com.vizdizbot.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,13 +31,16 @@ public class Users {
     @Column(unique = true)
     private String username;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String name;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String telegramToken;
 
     @Column(unique = true)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long telegramChatId;
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
