@@ -5,6 +5,7 @@ import com.vizdizbot.entity.Users;
 import com.vizdizbot.repository.MessageRepository;
 import com.vizdizbot.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,9 +19,13 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final VizDizBot telegramBotService;
 
-    public void sendMessage(String username, String text) {
+    public ResponseEntity<String> sendMessage(String username, String text) {
         Users user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+            .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.badRequest().body("Пользователь не найден");
+        }
 
         Message message = Message.builder()
             .user(user)
@@ -31,15 +36,21 @@ public class MessageService {
         messageRepository.save(message);
 
         String formatted = String.format("%s, я получил от тебя сообщение:\n%s", user.getName(), text);
-
         telegramBotService.sendMessage(user.getTelegramChatId(), formatted);
+
+        return ResponseEntity.ok("Сообщение успешно отправлено");
     }
 
-    public List<Message> getMessages(String username) {
+    public ResponseEntity<List<Message>> getMessages(String username) {
         Users user = userRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Пользователь не найден"));
+            .orElse(null);
 
-        return messageRepository.findByUserOrderByCreatedAtDesc(user);
+        if (user == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<Message> messages = messageRepository.findByUserOrderByCreatedAtDesc(user);
+        return ResponseEntity.ok(messages);
     }
 }
 

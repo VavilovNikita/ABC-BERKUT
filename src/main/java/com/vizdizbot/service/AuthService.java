@@ -4,6 +4,8 @@ import com.vizdizbot.entity.Users;
 import com.vizdizbot.jwt.JwtService;
 import com.vizdizbot.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,9 +20,11 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public void register(Users request) {
+    public ResponseEntity<String> register(Users request) {
         if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new RuntimeException("Username already exists");
+            return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body("Пользователь с таким именем уже существует");
         }
 
         Users user = Users.builder()
@@ -30,7 +34,9 @@ public class AuthService {
             .build();
 
         userRepository.save(user);
+        return ResponseEntity.ok("Пользователь успешно зарегистрирован");
     }
+
 
     public String login(Users request) {
         authenticationManager.authenticate(
