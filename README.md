@@ -18,7 +18,7 @@ http://89.111.141.165
 ## 📦 Эндпоинты
 
 🔐 Регистрация  
-POST /api/auth/register  
+POST http://89.111.141.165/api/auth/register  
 Тело запроса:
 {
 "username": "testuser",
@@ -27,7 +27,7 @@ POST /api/auth/register
 }
 
 🔐 Вход (аутентификация)  
-POST /api/auth/login  
+POST http://89.111.141.165/api/auth/login  
 Тело запроса:
 {
 "username": "testuser",
@@ -37,7 +37,7 @@ POST /api/auth/login
 Authorization: Bearer <JWT_токен>
 
 📬 Отправка сообщения  
-GET /api/messages/send  
+GET http://89.111.141.165/api/messages/send  
 Заголовки:  
 Authorization: Bearer <JWT_токен>  
 Тело запроса:
@@ -46,13 +46,13 @@ Authorization: Bearer <JWT_токен>
 }
 
 📥 Получение сообщений  
-GET /api/messages/all  
+GET http://89.111.141.165/api/messages/all  
 Заголовки:  
 Authorization: Bearer <JWT_токен>  
 Ответ: список сообщений текущего пользователя
 
 🤖 Генерация Telegram-токена  
-POST /api/telegram/token  
+POST http://89.111.141.165/api/telegram/token  
 Заголовки:  
 Authorization: Bearer <JWT_токен>  
 Ответ:  
@@ -74,7 +74,6 @@ Telegram-токен в формате UUID
 
 По умолчанию:
 - Backend доступен на http://localhost:8079
-- Через nginx: http://89.111.141.165/api/...
 
 ---
 
